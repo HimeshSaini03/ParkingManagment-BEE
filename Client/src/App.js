@@ -1,26 +1,21 @@
-// App.js
-//import Navbar from "./Component/Navbar";
-//import Footer from "./Component/Footer";
-//import SignUp from "./Component/SignUp";
-// App.js
-import React from 'react';
-import './App.css';
-import Navbar from "./Component/Navbar";
-import Footer from "./Component/Footer";
-import SignUp from "./Component/SignUp";
-import ParkingBooking from "./Component/ParkingBooking";
+import logo from './logo.svg';
+import Navbar from './Component/Navbar';
+import Login from'./Component/Login';
+import Signup from './Component/Signup';
+import Footer from './Component/Footer';
+import ParkingSpace from './Component/ParkingSpace';
+//import './App.css';
 
 function App() {
   return (
-    <div className="App">
+    <div className='App'>
       <Navbar />
-      <SignUp/>
-      <ParkingBooking />
+      <Login />
+      <Signup />  
+      <ParkingSpace /> 
       <Footer />
     </div>
   );
 }
 
 export default App;
-
-
