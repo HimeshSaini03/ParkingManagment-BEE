@@ -1,6 +1,6 @@
 // routes/parkingSpace.js
 const express = require('express');
-const ParkingSpace = require('../models/parkingSpace');
+const ParkingSpace = require('../models/ParkingSpace');
 const router = express.Router();
 
 // Create a new parking space

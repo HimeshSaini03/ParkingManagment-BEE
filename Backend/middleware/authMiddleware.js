@@ -1,43 +1,67 @@
-// //const jwt = require("jsonwebtoken");
-// const User = require("../models/User");
+// middleware/authMiddleware.js
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const Wallet = require('../models/Wallet'); // Add Wallet import
 
-// // const protect = async (req, res, next) => {
-// //   let token;
+const authenticate = async (req, res, next) => {
+  try {
+    // Get token from header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'No token provided'
+      });
+    }
 
-// //   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-// //     try {
-// //       token = req.headers.authorization.split(" ")[1];
-// //       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-// //       req.user = await User.findById(decoded.id).select("-password");
-// //       next();
-// //     } catch (error) {
-// //       res.status(401).json({ message: "Not authorized, token failed" });
-// //     }
-// //   }
+    const token = authHeader.split(' ')[1];
 
-// //   if (!token) {
-// //     res.status(401).json({ message: "Not authorized, no token" });
-// //   }
-// // };
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Get user from token
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
 
-// // module.exports = { protect };
-// const jwt = require("jsonwebtoken");
+    // Get or create wallet
+    let wallet = await Wallet.findOne({ userId: user._id });
+    if (!wallet) {
+      wallet = await Wallet.create({
+        userId: user._id,
+        balance: 0
+      });
+    }
 
-// const protect = (req, res, next) => {
-//   const token = req.headers.authorization?.split(" ")[1]; // Extract token from Authorization header
+    // Add both user and wallet to request
+    req.user = user;
+    req.wallet = wallet;
+    
+    next();
+    
+  } catch (error) {
+    console.error('Auth error:', error);
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid token'
+      });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        error: 'Token expired'
+      });
+    }
+    res.status(500).json({
+      success: false,
+      error: 'Authentication error'
+    });
+  }
+};
 
-//   if (!token) {
-//     return res.status(401).json({ message: "No token, authorization denied" });
-//   }
-
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     req.user = decoded;  // You can now access user data as req.user
-//     next();
-//   } catch (error) {
-//     res.status(401).json({ message: "Token is not valid" });
-//   }
-// };
-
-// module.exports = { protect };
-
+module.exports = authenticate;
